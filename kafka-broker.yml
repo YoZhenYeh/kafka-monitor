@@ -1,0 +1,93 @@
+lowercaseOutputName: true
+lowercaseOutputLabelNames: true
+whitelistObjectNames:
+  - kafka.server:*
+  - kafka.controller:*
+  - kafka.network:*
+  - kafka.log:*
+  - kafka.cluster:*
+  - java.lang:type=GarbageCollector,*
+  - java.lang:type=Memory
+  - java.lang:type=MemoryPool,*
+  - java.lang:type=OperatingSystem
+  - java.lang:type=Runtime
+  - java.lang:type=Threading
+  - java.nio:type=BufferPool,*
+
+rules:
+  # Generic JVM metrics
+  - pattern: java.lang<type=OperatingSystem><>((?!process_cpu_time)\w+)
+    name: kafka_jvm_$1
+    type: GAUGE
+    
+  - pattern: java.lang<type=Memory><HeapMemoryUsage>(\w+)
+    name: kafka_jvm_heap_$1
+    type: GAUGE
+    
+  - pattern: java.lang<type=Memory><NonHeapMemoryUsage>(\w+)
+    name: kafka_jvm_nonheap_$1
+    type: GAUGE
+    
+  - pattern: java.lang<type=GarbageCollector, name=(.+)><>CollectionCount
+    name: kafka_jvm_gc_collection_count
+    help: Garbage collection count
+    type: COUNTER
+    labels:
+      gc: $1
+      
+  - pattern: java.lang<type=GarbageCollector, name=(.+)><>CollectionTime
+    name: kafka_jvm_gc_collection_time_seconds
+    help: Garbage collection time
+    type: COUNTER
+    labels:
+      gc: $1
+      
+  # Kafka specific metrics
+  - pattern: kafka.server<type=(.+), name=(.+)><>(Count|Value|Mean|OneMinuteRate)
+    name: kafka_server_$1_$2
+    type: GAUGE
+    labels:
+      metric_type: $3
+      
+  - pattern: kafka.controller<type=(.+), name=(.+)><>(Count|Value|Mean)
+    name: kafka_controller_$1_$2
+    type: GAUGE
+    labels:
+      metric_type: $3
+      
+  - pattern: kafka.network<type=RequestMetrics, name=RequestsPerSec, request=(\w+), version=([0-9]+)><>(OneMinuteRate|Mean)
+    name: kafka_network_request_per_sec
+    labels:
+      request: $1
+      version: $2
+      aggregate: $3
+
+
+  # - pattern: kafka.network<type=(.+), name=(.+)><>(Count|Value|Mean|OneMinuteRate)
+  #   name: kafka_network_$1_$2
+  #   type: GAUGE
+  #   labels:
+  #     metric_type: $3
+      
+  - pattern: kafka.log<type=(.+), name=(.+), topic=([^,]+), partition=([^,]+)><>(Value)
+    name: kafka_log_$1_$2
+    type: GAUGE
+    labels:
+      topic: $3
+      partition: $4
+      
+  - pattern: kafka.cluster<type=(.+), name=(.+)><>(Count|Value|Mean)
+    name: kafka_cluster_$1_$2
+    type: GAUGE
+    labels:
+      metric_type: $3
+
+  # Kafka producer metrics
+  - pattern: 'kafka.producer<type=ProducerMetrics, name=(.+)><>(\w+)=.*'
+    name: kafka_producer_$1_$2
+    labels:
+      topic: "$1"
+    value: "$2"
+    type: GAUGE
+  
+  # - pattern: kafka.consumer<type=consumer-lag-metrics, client-id=(.+), group-id=(.+), topic=(.+), partition=(.+)><>value
