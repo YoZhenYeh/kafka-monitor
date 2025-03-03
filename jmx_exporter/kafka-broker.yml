@@ -1,0 +1,49 @@
+lowercaseOutputName: true
+lowercaseOutputLabelNames: true
+whitelistObjectNames:
+  - kafka.server:*
+  - kafka.controller:*
+  - kafka.network:*
+  - kafka.log:*
+  - kafka.consumer:*
+
+rules:
+  - pattern: kafka.server<type=BrokerTopicMetrics, name=(.+)><>(Count|Value|Mean|OneMinuteRate)
+    name: kafka_server_$1
+    type: GAUGE
+    labels:
+      metric_type: $2
+
+  - pattern: kafka.server<type=KafkaServer, name=BrokerState><>(Count|Value)
+    name: kafka_server_broker_status
+    type: GAUGE
+    labels:
+      metric_type: $1
+
+  - pattern: kafka.server<type=FetcherLagMetrics, name=(.+), clientId=(.+), topic=([^,]+), partition=([^,]+)><>(Value)
+    name: kafka_server_lag_metrics_$1
+    type: GAUGE
+    labels:
+      client_id: $2
+      topic: $3
+      partition: $4
+
+  - pattern: kafka.controller<type=(.+), name=(.+)><>(Count|Value|Mean)
+    name: kafka_controller_$1_$2
+    type: GAUGE
+    labels:
+      metric_type: $3
+
+  - pattern: kafka.network<type=RequestMetrics, name=RequestsPerSec, request=(\w+), version=([0-9]+)><>(OneMinuteRate|Mean)
+    name: kafka_network_request_per_sec
+    labels:
+      request: $1
+      version: $2
+      aggregate: $3
+
+  - pattern: kafka.log<type=(.+), name=(.+), topic=([^,]+), partition=([^,]+)><>(Value)
+    name: kafka_log_$1_$2
+    type: GAUGE
+    labels:
+      topic: $3
+      partition: $4
