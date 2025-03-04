@@ -3,17 +3,19 @@ This project sets up a 3-node Kafka cluster using KRaft mode, complete with Prom
 
 ## Prerequisites
 1. Docker and Docker Compose
-2. jmx_prometheus_javaagent-0.3.0.jar (https://github.com/prometheus/jmx_exporter/tree/parent-0.3.1)
+2. jmx_prometheus_javaagent-0.3.1.jar (https://github.com/prometheus/jmx_exporter/tree/parent-0.3.1)
 
 ## File Structure
+```
 kafka-monitor/
 ├── docker-compose.yml
 ├── prometheus.yml
 ├── jmx-exporter/
-│   └── jmx_prometheus_javaagent-0.3.0.jar
+│   └── jmx_prometheus_javaagent-0.3.1.jar
 │   └── kafka-broker.yml
 ├── KafkaMonitorGrafana.json
 └── README.md
+```
 
 ## Getting Started
 
